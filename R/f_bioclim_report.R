@@ -1,0 +1,31 @@
+#' Function to create individual complete report
+#'
+#' @description This function creates a complete report for a specific location, from temperature and precipitation data series.
+#' @param t Monthly average temperature data (12 nueric values).
+#' @param p Monthly average precipitation data (12 nueric values).
+#' @param nam Name of the location. It will be used as name of output file
+#' @param lat Latitude in degrees. For southern latitudes use negative values.
+#' @param CC Field capacity. It depends on water retention capacity and depth of roots. Use 400 as default value.
+#' @param output Path of the output pdf file.
+#' @return data frame with 20 variables: 'p', 'Tm', 'PET', 'e', 'D', 'S', 's_e_D', 'sum_s', 'c_D_e', 'sum_c', 'Q', 'x', 'E_e', 'D_e', 'Cd', 'T_75', 'B', 'b', 'bl', 'bc'.
+#' @import rmarkdown
+#' @examples
+#' \donttest{
+#' bioclim_report(t = c(10, 11.5, 14, 16.5, 20, 24.5, 27.5, 28, 24.5, 19.5, 14.5, 11),
+#' p = c(55, 73, 84, 58, 33, 23, 2, 2, 28, 66, 94, 71),
+#' lat = 35, nam = 'Seville', CC = 400, output ='./seville.pdf')
+#' }
+#' @export
+#'
+#'
+
+bioclim_report <- function(t, p, nam, lat, CC, output){
+  render(system.file("rmd", "bc_template.Rmd", package = "bioclim"), output_format = "pdf_document", params = list(
+    t = t,
+    p = p,
+    nam = nam,
+    lat = lat,
+    CC = CC
+  ),
+  output_file = output)
+}

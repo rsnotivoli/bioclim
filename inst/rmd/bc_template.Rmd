@@ -1,0 +1,107 @@
+---
+title: "Bioclimatic report"
+always_allow_html: yes
+params:
+  t: rnorm(12, 10)
+  p: rnorm(12, 50)
+  nam: nam
+  alt: rnorm(1, 100)
+  lat: rnorm(1, 30)
+  CC: CC
+output: pdf_document
+      # keep_tex: yes
+      # allow_html: yes
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(berryFunctions)
+library(kableExtra)
+library(systemfonts)
+knitr::opts_chunk$set(echo = TRUE)
+options(tinytex.verbose = TRUE)
+
+#data
+t = params$t
+p = params$p
+nam = params$nam
+alt = params$alt
+lat = params$lat
+fc = params$fc
+
+```
+
+## Exploratory analysis
+
+**`r nam`** is located at latitude **`r lat`**. The mean monthly temperature is **`r round(mean(t), 1)`** ºC and total precipitation **`r round(sum(p), 1)`** mm.
+
+
+```{r, echo = FALSE}
+clim <- t(data.frame(Month = month.abb, Temp. = t, Precip. = p))
+kbl(clim, caption = 'Monthly climatic summary')
+```
+
+
+```{r, echo = FALSE}
+plotWL(t, p)
+```
+
+## Water balance
+
+
+```{r, echo = FALSE}
+bh <- watbal(t = t, p = p, lat = lat, CC = CC)
+bh2 <- bh
+names(bh2) <- c('T', 'P', 'PET', 'TEAW', 'PALW', 'ST',
+                         'i_ST', 'RET', 'MD', 'ME', 'r', 'rP')
+kbl(round(bh2, 2), caption = "Water balance")
+```
+
+
+```{r, echo = FALSE}
+inds <- t(data.frame(a = round(thermind(t = t),2), b = round(postemp(t = t),2)))
+rownames(inds) <- c('Thermal Index', 'Positive Temperature Index')
+kbl(inds, caption = 'Monthly climatic summary')
+```
+
+
+```{r, echo = FALSE}
+plotWatbal(bh)
+```
+
+## Bioclimatic balance
+
+```{r, echo = FALSE}
+bb <- biobal(bh, CC)
+bb2 <- bb
+names(bb2) <- c('AIP', 'T', 'PET', 'RE', 'AW', 'S',
+                     'CWA', 'T75', 'PBI', 'RBI', 'FBI', 'CBI')
+k <- kbl(round(bb2, 2), caption = "Bioclimatic balance")
+kable_styling(k, latex_options="scale_down")
+```
+
+
+```{r, echo = FALSE}
+intens <- bioint(bb)
+k <- kbl(round(intens, 2), caption = "Bioclimatic intensities")
+kable_styling(k, latex_options="scale_down")
+```
+
+
+```{r, echo = FALSE}
+plotBiobal(intens)
+```
+
+
+```{r, echo = FALSE}
+PVH <- length(which((p-(0.2*bh$PET[1:12]))<0))
+PVT <- length(which(t<7.5))
+Tf <- min(t)
+P <- sum(p)
+tab <- data.frame(PVH = PVH,
+                  PVT = PVT,
+                  type = biotype(t=t, p=p, lat=lat, CC=CC, mode='sub'))
+kbl(tab, caption = "Bioclimatic classification")
+```
+
+
